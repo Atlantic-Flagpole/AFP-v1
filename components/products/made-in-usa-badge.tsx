@@ -5,6 +5,8 @@ interface MadeInUSABadgeProps {
   product: ShopifyProduct
 }
 
+const MADE_IN_USA_BADGE_URL = "/images/madeinusabadge.jpg"
+
 export function MadeInUSABadge({ product }: MadeInUSABadgeProps) {
   const shouldShowBadge = () => {
     const title = product.title?.toLowerCase() || ""
@@ -56,7 +58,13 @@ export function MadeInUSABadge({ product }: MadeInUSABadgeProps) {
   return (
     <div className="absolute top-1 right-1 z-10 opacity-70 hover:opacity-100 transition-opacity duration-300">
       <div className="relative w-12 h-12 md:w-14 md:h-14 flex-shrink-0 drop-shadow-md">
-        <Image src="/images/madeinusabadge.jpg" alt="Made in USA" fill className="object-contain" sizes="56px" />
+        <Image
+          src={MADE_IN_USA_BADGE_URL || "/placeholder.svg"}
+          alt="Made in USA"
+          fill
+          className="object-contain"
+          sizes="56px"
+        />
       </div>
     </div>
   )

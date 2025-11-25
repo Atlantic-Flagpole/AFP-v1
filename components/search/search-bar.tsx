@@ -1,14 +1,81 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Search, X, Sparkles, HelpCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
+
+// Inline SVG icons
+const SearchIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+)
+
+const XIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </svg>
+)
+
+const SparklesIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M19 17v4" />
+    <path d="M3 5h4" />
+    <path d="M17 19h4" />
+  </svg>
+)
+
+const HelpCircleIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <path d="M12 17h.01" />
+  </svg>
+)
 
 interface SearchBarProps {
   className?: string
@@ -19,7 +86,7 @@ interface SearchBarProps {
 
 export function SearchBar({
   className,
-  placeholder = "What can we help you with today?",
+  placeholder = "Search flagpoles, flags, accessories...",
   autoFocus,
   onBlur,
 }: SearchBarProps) {
@@ -29,7 +96,6 @@ export function SearchBar({
   const [isOpen, setIsOpen] = useState(false)
   const [results, setResults] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [showAIAssistant, setShowAIAssistant] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -48,11 +114,10 @@ export function SearchBar({
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
         const json = await res.json()
-        setResults(json.items || [])
+        setResults(json.products?.slice(0, 5) || [])
         setIsOpen(true)
       } catch (error) {
-        console.error("[v0] Search fetch error:", error)
-        setResults([])
+        console.error("Search error:", error)
       } finally {
         setIsLoading(false)
       }
@@ -65,10 +130,8 @@ export function SearchBar({
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsOpen(false)
-        setShowAIAssistant(false)
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
@@ -76,201 +139,78 @@ export function SearchBar({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (query.trim()) {
+      router.push(`/search?q=${encodeURIComponent(query)}`)
       setIsOpen(false)
-      setShowAIAssistant(false)
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`)
     }
   }
 
-  const handleClear = () => {
-    setQuery("")
-    setResults([])
-    setIsOpen(false)
-    setShowAIAssistant(false)
-  }
-
-  const aiSuggestions = [
-    { icon: "🏛️", text: "What flagpole height do I need?", query: "flagpole height guide" },
-    { icon: "🇺🇸", text: "How to install a residential flagpole?", query: "residential flagpole installation" },
-    {
-      icon: "⚡",
-      text: "What's the difference between aluminum and fiberglass?",
-      query: "aluminum vs fiberglass flagpoles",
-    },
-    { icon: "🎯", text: "Which flag size for my flagpole?", query: "flag size guide" },
-  ]
-
   return (
-    <div ref={searchRef} className={className}>
-      <form onSubmit={handleSubmit}>
-        <div className="relative">
+    <div ref={searchRef} className={`relative w-full ${className}`}>
+      <form onSubmit={handleSubmit} className="relative">
+        <div className="relative flex items-center">
+          <SearchIcon className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
           <Input
-            type="text"
+            type="search"
+            placeholder={placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={placeholder}
             autoFocus={autoFocus}
             onBlur={onBlur}
-            onFocus={() => {
-              if (results.length > 0) setIsOpen(true)
-              if (!query) setShowAIAssistant(true)
-            }}
-            className="w-full pl-10 pr-24 text-sm md:text-base h-10 md:h-11 text-left bg-gray-50 border-gray-300 focus:bg-white focus:border-[#C8A55C] transition-all rounded-full shadow-sm"
+            className="w-full pl-9 pr-20 py-2 h-9 text-sm bg-white border-gray-300 rounded-lg focus:border-[#C8A55C] focus:ring-[#C8A55C]"
           />
-          <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
-
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <div className="absolute right-1 flex items-center gap-1">
             {query && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={handleClear}
-                className="h-7 w-7 hover:bg-gray-100 rounded-full"
-              >
-                <X className="w-4 h-4" />
+              <Button type="button" variant="ghost" size="sm" onClick={() => setQuery("")} className="h-7 w-7 p-0">
+                <XIcon className="w-3.5 h-3.5" />
               </Button>
             )}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowAIAssistant(!showAIAssistant)}
-              className="h-7 w-7 hover:bg-[#C8A55C]/10 rounded-full group"
-              title="AI Assistant"
-            >
-              <Sparkles className="w-4 h-4 text-[#C8A55C] group-hover:scale-110 transition-transform" />
+            <Button type="submit" size="sm" className="h-7 px-3 bg-[#C8A55C] hover:bg-[#b8954c] text-xs font-medium">
+              Search
             </Button>
-            <Link
-              href="/help-center"
-              className="h-7 w-7 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors"
-              title="Help Center"
-            >
-              <HelpCircle className="w-4 h-4 text-gray-500 hover:text-[#0B1C2C]" />
-            </Link>
           </div>
         </div>
       </form>
 
-      {showAIAssistant && !query && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl p-4 md:p-6 animate-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-[#C8A55C]" />
-            <h3 className="font-semibold text-[#0B1C2C]">How can we help you today?</h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {aiSuggestions.map((suggestion, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setQuery(suggestion.query)
-                  setShowAIAssistant(false)
-                  router.push(`/search?q=${encodeURIComponent(suggestion.query)}`)
-                }}
-                className="flex items-start gap-3 p-3 text-left hover:bg-gray-50 rounded-lg transition-colors border border-gray-100 hover:border-[#C8A55C] group"
-              >
-                <span className="text-2xl flex-shrink-0">{suggestion.icon}</span>
-                <span className="text-sm text-gray-700 group-hover:text-[#0B1C2C] leading-tight">
-                  {suggestion.text}
-                </span>
-              </button>
-            ))}
-          </div>
-          <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row gap-2">
-            <Link
-              href="/help-center"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm text-[#0B1C2C] hover:text-[#C8A55C] transition-colors rounded-lg hover:bg-gray-50"
-            >
-              <HelpCircle className="w-4 h-4" />
-              Visit Help Center
-            </Link>
-            <Link
-              href="/contact"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm bg-[#C8A55C] text-white hover:bg-[#a88947] transition-colors rounded-lg font-medium"
-            >
-              Contact Support
-            </Link>
-          </div>
-        </div>
-      )}
-
       {/* Search Results Dropdown */}
-      {isOpen && results.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl max-h-96 overflow-y-auto animate-in slide-in-from-top-2 duration-200">
-          {results.slice(0, 8).map((product) => (
-            <Link
-              key={product.id}
-              href={`/products/${product.handle}`}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
-              onClick={() => {
-                setIsOpen(false)
-                setQuery("")
-              }}
-            >
-              {product.image ? (
-                <Image
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.title}
-                  width={48}
-                  height={48}
-                  className="rounded object-cover flex-shrink-0 w-12 h-12"
-                />
-              ) : (
-                <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
-                  <Search className="w-5 h-5 text-gray-400" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-[#0B1C2C] truncate text-sm">{product.title}</div>
-                <div className="text-xs text-gray-500 flex items-center gap-2">
-                  {product.productType && <span className="truncate">{product.productType}</span>}
-                  {product.price && (
-                    <span className="font-semibold text-[#C8A55C] flex-shrink-0">
-                      ${Number.parseFloat(product.price.amount).toFixed(2)}
-                    </span>
+      {isOpen && (results.length > 0 || isLoading) && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+          {isLoading ? (
+            <div className="p-4 text-center text-gray-500 text-sm">Searching...</div>
+          ) : (
+            <>
+              {results.map((product: any) => (
+                <Link
+                  key={product.id}
+                  href={`/products/${product.handle}`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+                >
+                  {product.featuredImage?.url && (
+                    <Image
+                      src={product.featuredImage.url || "/placeholder.svg"}
+                      alt={product.title}
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 object-cover rounded"
+                    />
                   )}
-                </div>
-              </div>
-            </Link>
-          ))}
-          {results.length > 8 && (
-            <button
-              onClick={() => {
-                setIsOpen(false)
-                router.push(`/search?q=${encodeURIComponent(query.trim())}`)
-              }}
-              className="w-full px-4 py-3 text-sm text-[#C8A55C] hover:bg-gray-50 font-medium transition-colors"
-            >
-              View all {results.length} results →
-            </button>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{product.title}</p>
+                    <p className="text-xs text-[#C8A55C] font-semibold">
+                      ${Number.parseFloat(product.priceRange?.minVariantPrice?.amount || "0").toFixed(2)}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+              <Link
+                href={`/search?q=${encodeURIComponent(query)}`}
+                onClick={() => setIsOpen(false)}
+                className="block p-3 text-center text-sm text-[#C8A55C] hover:bg-gray-50 font-medium"
+              >
+                View all results for "{query}"
+              </Link>
+            </>
           )}
-        </div>
-      )}
-
-      {isOpen && isLoading && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl p-4">
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-            <div className="w-4 h-4 border-2 border-gray-300 border-t-[#C8A55C] rounded-full animate-spin" />
-            Searching...
-          </div>
-        </div>
-      )}
-
-      {isOpen && !isLoading && query.trim().length >= 2 && results.length === 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-2xl p-6">
-          <div className="text-center">
-            <div className="text-sm text-gray-500 mb-3">No products found for "{query}"</div>
-            <button
-              onClick={() => {
-                setShowAIAssistant(true)
-                setIsOpen(false)
-              }}
-              className="text-sm text-[#C8A55C] hover:text-[#a88947] font-medium flex items-center gap-1 mx-auto"
-            >
-              <Sparkles className="w-4 h-4" />
-              Try AI Assistant for help
-            </button>
-          </div>
         </div>
       )}
     </div>

@@ -2,10 +2,9 @@
 
 import type React from "react"
 import Link from "next/link"
-import { useState, useEffect, useRef } from "react"
-import { ShoppingCart, MenuIcon, User } from 'lucide-react'
-import { FlagpoleQuizModal } from "@/components/quiz/flagpole-quiz-modal"
 import Image from "next/image"
+import { useState, useEffect, useRef } from "react"
+import { FlagpoleQuizModal } from "@/components/quiz/flagpole-quiz-modal"
 import { useCart } from "@/components/cart/cart-context"
 import { SearchBarWrapper } from "@/components/search/search-bar-wrapper"
 import type { Menu } from "@/lib/menus"
@@ -14,11 +13,92 @@ import { ChristmasTreeMegaMenu } from "@/components/header/christmas-tree-mega-m
 import { isNFLMenuItem, isChristmasTreeMenuItem } from "@/lib/nfl-teams"
 import type { ShopifyProduct } from "@/lib/shopify/types"
 import { MegaMenuWithCart } from "@/components/header/mega-menu-with-cart"
-import { MobileMenuAmazon } from "@/components/header/mobile-menu-amazon"
+import { MobileMenuEnhanced } from "@/components/header/mobile-menu-enhanced"
 import { useGeo } from "@/lib/geo/context"
 import { getStateCodeFromRegion } from "@/lib/geo/state-mapping"
-import { AffiliateMegaMenu } from "@/components/header/affiliate-mega-menu"
 import { InfoCenterMegaMenu } from "@/components/header/info-center-mega-menu"
+
+const ShoppingCartIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="8" cy="21" r="1" />
+    <circle cx="19" cy="21" r="1" />
+    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+  </svg>
+)
+
+const MenuIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <line x1="4" x2="20" y1="12" y2="12" />
+    <line x1="4" x2="20" y1="6" y2="6" />
+    <line x1="4" x2="20" y1="18" y2="18" />
+  </svg>
+)
+
+const UserIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+)
+
+const SearchIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </svg>
+)
+
+const MapPinIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+)
 
 interface HeaderClientProps {
   menuData: Menu | null
@@ -26,6 +106,8 @@ interface HeaderClientProps {
   submenuProductsData?: Record<string, any[]>
   nflFlagProducts: ShopifyProduct[]
   christmasTreeProducts: ShopifyProduct[]
+  holidayProducts?: ShopifyProduct[]
+  partsProducts?: ShopifyProduct[]
   judgemeBadge?: React.ReactNode
 }
 
@@ -35,6 +117,8 @@ export function HeaderClient({
   submenuProductsData = {},
   nflFlagProducts,
   christmasTreeProducts,
+  holidayProducts = [],
+  partsProducts = [],
   judgemeBadge,
 }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -53,7 +137,7 @@ export function HeaderClient({
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10)
     }
-    handleScroll() // Check initial state
+    handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -64,26 +148,13 @@ export function HeaderClient({
         setActiveDropdown(null)
       }
     }
-
     if (activeDropdown) {
       document.addEventListener("mousedown", handleClickOutside)
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [activeDropdown])
-
-  console.log("[v0] 📦 HeaderClient received megaMenuData keys:", Object.keys(megaMenuData || {}))
-  console.log(
-    "[v0] 📦 HeaderClient menu items with products:",
-    menuData?.items?.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      hasProducts: !!megaMenuData?.[item.id]?.products?.nodes?.length,
-      productCount: megaMenuData?.[item.id]?.products?.nodes?.length || 0,
-    })),
-  )
 
   if (!menuData || !menuData.items || menuData.items.length === 0) {
     return null
@@ -98,271 +169,220 @@ export function HeaderClient({
 
   return (
     <>
-      <MobileMenuAmazon
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        location={location}
-        stateCode={stateCode}
-        shopifyAccountUrl={shopifyAccountUrl}
-        onQuizOpen={() => setQuizModalOpen(true)}
-      />
-
       <header
-        className={`sticky top-0 z-[90] bg-white border-b border-gray-200 transition-all duration-300 ${
-          isScrolled ? "shadow-lg" : "shadow-sm"
-        }`}
+        className={`sticky top-0 z-50 bg-white transition-shadow duration-300 ${isScrolled ? "shadow-md" : "shadow-sm"}`}
       >
-        <div className="container mx-auto px-3 lg:px-4">
-          <div className="md:hidden">
-            <div className="flex items-center justify-between h-14 py-2">
+        {/* Top utility bar */}
+        <div className="bg-[#0B1C2C] text-white">
+          <div className="container mx-auto px-4 py-1.5 flex items-center justify-between text-xs">
+            <div className="flex items-center gap-4">
+              <Link href="/info-center/phoenix-365-day-home-trial" className="hover:text-[#C8A55C] transition-colors">
+                365-Day Home Trial
+              </Link>
+              <span className="hidden sm:inline text-white/40">|</span>
+              <Link href="/guarantee" className="hidden sm:inline hover:text-[#C8A55C] transition-colors">
+                Lifetime Warranty
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <Link href="/find-store" className="flex items-center gap-1 hover:text-[#C8A55C] transition-colors">
+                <MapPinIcon className="w-3 h-3" />
+                <span className="hidden sm:inline">Find in Store</span>
+              </Link>
+              <Link href="/account" className="hover:text-[#C8A55C] transition-colors">
+                My Account
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b border-gray-200 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between gap-4 h-16">
+              {/* Hamburger Menu Button */}
               <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="flex items-center justify-center w-9 h-9 hover:bg-gray-50 rounded-lg transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="flex items-center gap-2 px-3 py-2 bg-[#0B1C2C] text-white hover:bg-[#1a2f42] rounded-lg transition-colors flex-shrink-0"
                 aria-label="Open menu"
               >
-                <MenuIcon className="w-5 h-5 text-[#0B1C2C]" strokeWidth={2.5} />
+                <MenuIcon className="w-5 h-5" />
+                <span className="font-semibold text-sm">All</span>
               </button>
 
-              <Link href="/" className="flex items-center gap-2 flex-1 justify-center">
+              <Link href="/" className="flex items-center gap-3 flex-shrink-0">
                 <Image
                   src="/images/design-mode/favicon.png"
-                  alt="Atlantic Flagpoles"
-                  width={32}
-                  height={32}
-                  className="w-8 h-8"
-                />
-                <div className="flex flex-col leading-none">
-                  <span
-                    className="font-bold text-[#0B1C2C] tracking-wider text-xs"
-                    style={{ fontFamily: "system-ui, -apple-system, sans-serif", letterSpacing: "0.05em" }}
-                  >
-                    ATLANTIC
-                  </span>
-                  <span
-                    className="font-semibold text-[#A08940] tracking-widest text-[9px]"
-                    style={{ fontFamily: "system-ui, -apple-system, sans-serif", letterSpacing: "0.1em" }}
-                  >
-                    FLAGPOLE
-                  </span>
-                </div>
-              </Link>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                  className="flex items-center justify-center w-9 h-9 hover:bg-gray-50 rounded-lg transition-colors"
-                  aria-label="Search"
-                >
-                  <svg
-                    className="w-5 h-5 text-[#0B1C2C]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2.5}
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                  </svg>
-                </button>
-                <a
-                  href={shopifyAccountUrl}
-                  className="flex items-center justify-center w-9 h-9 hover:bg-gray-50 rounded-lg transition-colors"
-                  aria-label="Account"
-                >
-                  <User className="w-5 h-5 text-[#0B1C2C]" strokeWidth={2.5} />
-                </a>
-                <Link
-                  href="/cart"
-                  className="relative flex items-center justify-center w-9 h-9 hover:bg-gray-50 rounded-lg transition-colors"
-                  aria-label="Cart"
-                >
-                  <ShoppingCart className="w-5 h-5 text-[#0B1C2C]" strokeWidth={2.5} />
-                  {cartItemCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 bg-[#C41E3A] text-white text-[9px] font-black rounded-full min-w-[16px] h-4 flex items-center justify-center px-1">
-                      {cartItemCount}
-                    </span>
-                  )}
-                </Link>
-              </div>
-            </div>
-
-            {/* Mobile Search - Better flow */}
-            {mobileSearchOpen && (
-              <div className="pb-3 border-t border-gray-100">
-                <div className="pt-3">
-                  <SearchBarWrapper className="w-full" />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="hidden md:block">
-            <div className="flex items-center justify-between gap-4 h-16 py-3">
-              <Link href="/" className="flex items-center gap-2.5 group flex-shrink-0">
-                <Image
-                  src="/images/design-mode/favicon.png"
-                  alt="Atlantic Flagpole Logo"
+                  alt="Atlantic Flagpole"
                   width={44}
                   height={44}
-                  className="w-11 h-11 group-hover:scale-105 transition-transform duration-300"
+                  className="w-11 h-11 object-contain"
+                  priority
                 />
-                <div>
-                  <span
-                    className="font-bold text-[#0B1C2C] tracking-tight block leading-none text-xl"
-                    style={{ fontFamily: "system-ui, -apple-system, sans-serif", letterSpacing: "0.02em" }}
-                  >
-                    ATLANTIC
-                  </span>
-                  <span
-                    className="font-semibold text-[#A08940] tracking-widest block leading-none text-[10px]"
-                    style={{ fontFamily: "system-ui, -apple-system, sans-serif", letterSpacing: "0.15em" }}
-                  >
-                    FLAGPOLE
-                  </span>
-                </div>
+                <span className="text-[#0B1C2C] font-black text-xl md:text-2xl tracking-tight whitespace-nowrap">
+                  ATLANTIC<span className="text-[#C8A55C]">FLAGPOLE</span>
+                </span>
               </Link>
 
-              <div className="flex-1 max-w-xl mx-auto">
-                <SearchBarWrapper className="w-full" />
-              </div>
+              <nav className="hidden lg:flex items-center justify-center flex-1" ref={menuRef}>
+                <div className="flex items-center gap-1">
+                  {menuItems.map((item: any) => (
+                    <div
+                      key={item.id}
+                      className="relative"
+                      onMouseEnter={() => setActiveDropdown(item.id)}
+                      onMouseLeave={() => setActiveDropdown(null)}
+                    >
+                      <Link
+                        href={item.url}
+                        className="relative px-4 py-2 text-sm font-semibold text-[#0B1C2C] hover:text-[#C8A55C] transition-all duration-300 inline-flex items-center justify-center group"
+                      >
+                        <span>{item.title}</span>
+                        <span
+                          className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-[#C8A55C] transition-all duration-300 ${activeDropdown === item.id ? "w-full" : "w-0 group-hover:w-full"}`}
+                        />
+                      </Link>
 
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <a
-                  href={shopifyAccountUrl}
-                  className="text-[#0B1C2C] hover:text-[#C8A55C] transition-colors"
+                      {/* Mega Menu Dropdown */}
+                      {activeDropdown === item.id && item.items && item.items.length > 0 && (
+                        <div
+                          className="fixed left-0 right-0 top-full pt-0 z-50"
+                          style={{ top: "auto" }}
+                          onMouseEnter={() => setActiveDropdown(item.id)}
+                          onMouseLeave={() => setActiveDropdown(null)}
+                        >
+                          <div className="bg-white shadow-2xl border-t-4 border-[#C8A55C] animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="container mx-auto px-4 py-6">
+                              {isNFLMenuItem(item.title) ? (
+                                <NFLMenuClient
+                                  nflFlagProducts={nflFlagProducts}
+                                  onLinkClick={() => setActiveDropdown(null)}
+                                />
+                              ) : isChristmasTreeMenuItem(item.title) ? (
+                                <ChristmasTreeMegaMenu
+                                  products={christmasTreeProducts}
+                                  submenuProductsData={submenuProductsData}
+                                  onLinkClick={() => setActiveDropdown(null)}
+                                />
+                              ) : isResourceMenu(item) ? (
+                                <InfoCenterMegaMenu onLinkClick={() => setActiveDropdown(null)} />
+                              ) : (
+                                <MegaMenuWithCart
+                                  title={item.title}
+                                  menuItems={item.items || []}
+                                  featuredProducts={megaMenuData[item.id]?.products?.nodes || []}
+                                  onLinkClick={() => setActiveDropdown(null)}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </nav>
+
+              {/* Right Actions */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Link
+                  href="/quiz"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#C8A55C] text-[#0B1C2C] text-sm font-bold rounded-lg hover:bg-[#b8954c] transition-colors"
+                >
+                  Take Quiz
+                </Link>
+                <Link
+                  href="/account"
+                  className="hidden lg:flex p-2 text-gray-600 hover:text-[#C8A55C] transition-colors"
                   aria-label="Account"
                 >
-                  <User className="w-5 h-5" />
-                </a>
-
+                  <UserIcon className="w-5 h-5" />
+                </Link>
                 <Link
                   href="/cart"
-                  className="relative text-[#0B1C2C] hover:text-[#C8A55C] transition-colors group"
+                  className="p-2 text-gray-600 hover:text-[#C8A55C] transition-colors relative"
                   aria-label="Shopping cart"
                 >
-                  <ShoppingCart className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+                  <ShoppingCartIcon className="w-5 h-5" />
                   {cartItemCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#C41E3A] text-white text-xs font-bold rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                      {cartItemCount}
+                    <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#C8A55C] text-white text-[10px] rounded-full flex items-center justify-center font-bold">
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
                     </span>
                   )}
                 </Link>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-100" ref={menuRef}>
-              <div className="relative">
-                <nav className="flex items-center justify-center gap-6 py-2.5">
-                  {menuItems.map((item) => {
-                    const hasSubmenu = item.items && item.items.length > 0
-                    const isChristmas = isChristmasTreeMenuItem(item.title)
-                    const isAffiliate = item.title.toLowerCase().includes("affiliate")
-
-                    if (!hasSubmenu && !isAffiliate) {
-                      return (
-                        <Link
-                          key={item.id}
-                          href={item.url}
-                          className="relative text-[#0B1C2C] hover:text-[#C8A55C] transition-colors duration-300 font-semibold text-sm tracking-wide group"
-                        >
-                          {item.title}
-                          <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-[#C8A55C] group-hover:w-full transition-all duration-300" />
-                        </Link>
-                      )
-                    }
-
-                    return (
-                      <div key={item.id} className="relative">
-                        <button
-                          onMouseEnter={() => setActiveDropdown(item.id)}
-                          className="text-[#0B1C2C] hover:text-[#C8A55C] transition-colors duration-300 font-semibold text-sm tracking-wide group py-1 relative"
-                        >
-                          <span className={isChristmas ? "text-green-700" : ""}>{item.title}</span>
-                          <span className="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-[#C8A55C] group-hover:w-full transition-all duration-300" />
-                        </button>
-                      </div>
-                    )
-                  })}
-                </nav>
-
-                {activeDropdown && (
-                  <div
-                    className="absolute left-0 right-0 top-full bg-white border-t border-gray-200 shadow-2xl z-[90]"
-                    onMouseLeave={() => setActiveDropdown(null)}
-                  >
-                    <div className="container mx-auto px-4 py-4">
-                      {menuItems.map((item) => {
-                        if (activeDropdown !== item.id) return null
-
-                        const itemData = megaMenuData[item.id]
-                        const isResource = isResourceMenu(item)
-                        const isNFL = isNFLMenuItem(item.title)
-                        const isChristmas = isChristmasTreeMenuItem(item.title)
-                        const isInfoCenter = item.title.toLowerCase().includes("info")
-                        const isAffiliate = item.title.toLowerCase().includes("affiliate")
-
-                        if (isChristmas) {
-                          return (
-                            <div key={item.id}>
-                              <ChristmasTreeMegaMenu
-                                products={christmasTreeProducts}
-                                submenuProductsData={submenuProductsData}
-                                onLinkClick={() => setActiveDropdown(null)}
-                              />
-                            </div>
-                          )
-                        }
-
-                        if (isNFL) {
-                          return (
-                            <div key={item.id}>
-                              <NFLMenuClient
-                                nflFlagProducts={nflFlagProducts}
-                                onLinkClick={() => setActiveDropdown(null)}
-                              />
-                            </div>
-                          )
-                        }
-
-                        if (isInfoCenter) {
-                          return (
-                            <div key={item.id}>
-                              <InfoCenterMegaMenu onLinkClick={() => setActiveDropdown(null)} />
-                            </div>
-                          )
-                        }
-
-                        if (isAffiliate) {
-                          return (
-                            <div key={item.id}>
-                              <AffiliateMegaMenu onLinkClick={() => setActiveDropdown(null)} />
-                            </div>
-                          )
-                        }
-
-                        const displayProducts = itemData?.products?.nodes || []
-
-                        return (
-                          <div key={item.id}>
-                            <MegaMenuWithCart
-                              title={item.title}
-                              menuItems={item.items || []}
-                              featuredProducts={displayProducts}
-                              onLinkClick={() => setActiveDropdown(null)}
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </div>
+
+        <div className="bg-[#F5F3EF] border-b border-gray-200">
+          <div className="container mx-auto px-2 md:px-4">
+            <div className="flex items-center gap-2 h-10">
+              {/* Quick Links - smaller */}
+              <div className="hidden lg:flex items-center gap-0.5 flex-shrink-0">
+                {[
+                  { href: "/reviews", label: "Reviews" },
+                  { href: "/compare", label: "Compare" },
+                  { href: "/about", label: "About" },
+                  { href: "/help-center", label: "Help" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="px-2 py-1 text-xs font-medium text-[#0B1C2C] hover:text-[#C8A55C] whitespace-nowrap transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/led-christmas-trees-for-flagpole"
+                  className="px-2 py-1 text-xs font-bold text-red-600 hover:text-red-700 whitespace-nowrap"
+                >
+                  Holiday Deals
+                </Link>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <SearchBarWrapper />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Search */}
+        <div className="md:hidden border-b border-gray-200 bg-white">
+          <div className="container mx-auto px-4 py-2">
+            <button
+              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              className="w-full flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-gray-500 text-sm"
+            >
+              <SearchIcon className="w-4 h-4" />
+              <span>Search flagpoles, flags, accessories...</span>
+            </button>
+          </div>
+        </div>
+
+        {mobileSearchOpen && (
+          <div className="md:hidden border-b border-gray-200 bg-white">
+            <div className="container mx-auto px-4 py-3">
+              <SearchBarWrapper />
+            </div>
+          </div>
+        )}
       </header>
 
-      <FlagpoleQuizModal open={quizModalOpen} onOpenChange={setQuizModalOpen} />
+      <MobileMenuEnhanced
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        shopifyAccountUrl={shopifyAccountUrl}
+        onQuizOpen={() => {
+          setMobileMenuOpen(false)
+          setQuizModalOpen(true)
+        }}
+      />
+
+      <FlagpoleQuizModal isOpen={quizModalOpen} onClose={() => setQuizModalOpen(false)} />
+
+      {judgemeBadge && <div className="hidden">{judgemeBadge}</div>}
     </>
   )
 }
