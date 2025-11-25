@@ -122,15 +122,22 @@ export function HeaderClient({
 }: HeaderClientProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [closingDropdown, setClosingDropdown] = useState<string | null>(null)
   const [quizModalOpen, setQuizModalOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const { cart } = useCart()
   const cartItemCount = cart?.lines?.edges ? cart.lines.edges.length : 0
   const menuRef = useRef<HTMLDivElement>(null)
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const { location } = useGeo()
   const stateCode = location ? getStateCodeFromRegion(location.region) : null
   const shopifyAccountUrl = `https://${process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN}/account`
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 100)
@@ -160,12 +167,44 @@ export function HeaderClient({
     }
   }, [activeDropdown])
 
+  useEffect(() => {
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const handleMenuEnter = (itemId: string) => {
-    setActiveDropdown(itemId)
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current)
+      animationTimeoutRef.current = null
+    }
+
+    if (activeDropdown && activeDropdown !== itemId) {
+      setClosingDropdown(activeDropdown)
+      setActiveDropdown(null)
+
+      animationTimeoutRef.current = setTimeout(() => {
+        setClosingDropdown(null)
+        setActiveDropdown(itemId)
+        animationTimeoutRef.current = null
+      }, 200)
+    } else if (!activeDropdown) {
+      setActiveDropdown(itemId)
+    }
   }
 
   const handleMenuLeave = () => {
-    setActiveDropdown(null)
+    if (activeDropdown) {
+      setClosingDropdown(activeDropdown)
+      setActiveDropdown(null)
+
+      animationTimeoutRef.current = setTimeout(() => {
+        setClosingDropdown(null)
+        animationTimeoutRef.current = null
+      }, 200)
+    }
   }
 
   if (!menuData || !menuData.items || menuData.items.length === 0) {
@@ -295,40 +334,45 @@ export function HeaderClient({
                       </Link>
 
                       {/* Mega Menu Dropdown */}
-                      {activeDropdown === item.id && item.items && item.items.length > 0 && (
-                        <div
-                          className="fixed left-0 right-0 pt-0 z-50 animate-slideDown"
-                          style={{ top: "100%" }}
-                          onMouseEnter={() => setActiveDropdown(item.id)}
-                          onMouseLeave={handleMenuLeave}
-                        >
-                          <div className="bg-white shadow-2xl border-t-4 border-[#C8A55C]">
-                            <div className="container mx-auto px-4 py-6">
-                              {isNFLMenuItem(item.title) ? (
-                                <NFLMenuClient
-                                  nflFlagProducts={nflFlagProducts}
-                                  onLinkClick={() => setActiveDropdown(null)}
-                                />
-                              ) : isChristmasTreeMenuItem(item.title) ? (
-                                <ChristmasTreeMegaMenu
-                                  products={christmasTreeProducts}
-                                  submenuProductsData={submenuProductsData}
-                                  onLinkClick={() => setActiveDropdown(null)}
-                                />
-                              ) : isResourceMenu(item) ? (
-                                <InfoCenterMegaMenu onLinkClick={() => setActiveDropdown(null)} />
-                              ) : (
-                                <MegaMenuWithCart
-                                  title={item.title}
-                                  menuItems={item.items || []}
-                                  featuredProducts={megaMenuData[item.id]?.products?.nodes || []}
-                                  onLinkClick={() => setActiveDropdown(null)}
-                                />
-                              )}
+                      {(activeDropdown === item.id || closingDropdown === item.id) &&
+                        item.items &&
+                        item.items.length > 0 && (
+                          <div
+                            className={`fixed left-0 right-0 z-50 ${
+                              activeDropdown === item.id ? "animate-slideDown" : "animate-slideUp"
+                            }`}
+                            style={{ top: "calc(100% - 12px)" }}
+                            onMouseEnter={() => setActiveDropdown(item.id)}
+                            onMouseLeave={handleMenuLeave}
+                          >
+                            <div className="h-3" />
+                            <div className="bg-white shadow-2xl border-t-4 border-[#C8A55C]">
+                              <div className="container mx-auto px-4 py-6">
+                                {isNFLMenuItem(item.title) ? (
+                                  <NFLMenuClient
+                                    nflFlagProducts={nflFlagProducts}
+                                    onLinkClick={() => setActiveDropdown(null)}
+                                  />
+                                ) : isChristmasTreeMenuItem(item.title) ? (
+                                  <ChristmasTreeMegaMenu
+                                    products={christmasTreeProducts}
+                                    submenuProductsData={submenuProductsData}
+                                    onLinkClick={() => setActiveDropdown(null)}
+                                  />
+                                ) : isResourceMenu(item) ? (
+                                  <InfoCenterMegaMenu onLinkClick={() => setActiveDropdown(null)} />
+                                ) : (
+                                  <MegaMenuWithCart
+                                    title={item.title}
+                                    menuItems={item.items || []}
+                                    featuredProducts={megaMenuData[item.id]?.products?.nodes || []}
+                                    onLinkClick={() => setActiveDropdown(null)}
+                                  />
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                     </div>
                   ))}
                 </div>
@@ -367,22 +411,24 @@ export function HeaderClient({
         </div>
       </header>
 
-      <MobileMenuEnhanced
-        isOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        shopifyAccountUrl={shopifyAccountUrl}
-        onQuizOpen={() => {
-          setMobileMenuOpen(false)
-          setQuizModalOpen(true)
-        }}
-        menuData={menuData}
-        megaMenuData={megaMenuData}
-        submenuProductsData={submenuProductsData}
-        nflFlagProducts={nflFlagProducts}
-        christmasTreeProducts={christmasTreeProducts}
-        holidayProducts={holidayProducts}
-        partsProducts={partsProducts}
-      />
+      {isMounted && (
+        <MobileMenuEnhanced
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          shopifyAccountUrl={shopifyAccountUrl}
+          onQuizOpen={() => {
+            setMobileMenuOpen(false)
+            setQuizModalOpen(true)
+          }}
+          menuData={menuData}
+          megaMenuData={megaMenuData}
+          submenuProductsData={submenuProductsData}
+          nflFlagProducts={nflFlagProducts}
+          christmasTreeProducts={christmasTreeProducts}
+          holidayProducts={holidayProducts}
+          partsProducts={partsProducts}
+        />
+      )}
 
       <FlagpoleQuizModal isOpen={quizModalOpen} onClose={() => setQuizModalOpen(false)} />
 

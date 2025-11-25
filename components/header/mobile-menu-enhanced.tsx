@@ -503,12 +503,16 @@ export function MobileMenuEnhanced({
   const [activeTab, setActiveTab] = useState<TabType>("shop")
   const [expandedSections, setExpandedSections] = useState<string[]>([])
   const [categoryStack, setCategoryStack] = useState<{ index: number; label: string }[]>([])
+  const [departmentStack, setDepartmentStack] = useState<
+    { type: "main" | "category"; index: number; label: string; categoryIndex?: number }[]
+  >([])
 
   useEffect(() => {
     if (!isOpen) {
       setActiveTab("shop")
       setExpandedSections([])
       setCategoryStack([])
+      setDepartmentStack([])
     }
   }, [isOpen])
 
@@ -574,10 +578,97 @@ export function MobileMenuEnhanced({
   ]
 
   const renderShopTab = () => {
+    if (departmentStack.length > 0) {
+      const currentLevel = departmentStack[departmentStack.length - 1]
+
+      if (currentLevel.type === "main") {
+        // Show categories for a main department
+        const department = navigationConfig[currentLevel.index]
+
+        return (
+          <div className="space-y-6 animate-in slide-in-from-right duration-200">
+            <button
+              onClick={() => setDepartmentStack((prev) => prev.slice(0, -1))}
+              className="flex items-center gap-2 text-gray-600 hover:text-[#C8A55C] transition-colors"
+            >
+              <ChevronLeftIcon className="w-5 h-5" />
+              <span className="font-semibold">Main Menu</span>
+            </button>
+
+            <div className="bg-[#F5F3EF] -mx-4 px-4 py-4 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-[#0B1C2C]">{department.label}</h2>
+            </div>
+
+            <div className="space-y-1">
+              {department.categories.map((category, catIdx) => (
+                <div key={catIdx}>
+                  <button
+                    onClick={() =>
+                      setDepartmentStack((prev) => [
+                        ...prev,
+                        { type: "category", index: currentLevel.index, label: category.label, categoryIndex: catIdx },
+                      ])
+                    }
+                    className="flex items-center justify-between w-full p-4 hover:bg-[#F5F3EF] rounded-lg transition-colors text-left group"
+                  >
+                    <div>
+                      <div className="text-[#0B1C2C] font-semibold text-base">{category.label}</div>
+                      <div className="text-sm text-gray-500 mt-0.5">{category.items.length} items</div>
+                    </div>
+                    <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-[#C8A55C]" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      } else if (currentLevel.type === "category") {
+        // Show items in a category
+        const department = navigationConfig[currentLevel.index]
+        const category = department.categories[currentLevel.categoryIndex!]
+
+        return (
+          <div className="space-y-6 animate-in slide-in-from-right duration-200">
+            <button
+              onClick={() => setDepartmentStack((prev) => prev.slice(0, -1))}
+              className="flex items-center gap-2 text-gray-600 hover:text-[#C8A55C] transition-colors"
+            >
+              <ChevronLeftIcon className="w-5 h-5" />
+              <span className="font-semibold">{department.label}</span>
+            </button>
+
+            <div className="bg-[#F5F3EF] -mx-4 px-4 py-4 border-b border-gray-200">
+              <div className="text-sm text-gray-600 mb-1">{department.label}</div>
+              <h2 className="text-xl font-bold text-[#0B1C2C]">{category.label}</h2>
+            </div>
+
+            <div className="space-y-2">
+              {category.items.map((item, itemIdx) => (
+                <Link
+                  key={itemIdx}
+                  href={item.href}
+                  onClick={onClose}
+                  className="flex items-start gap-3 p-4 bg-white hover:bg-[#F5F3EF] rounded-lg transition-all shadow-sm hover:shadow border border-gray-100 group"
+                >
+                  <div className="flex-1">
+                    <div className="text-[#0B1C2C] font-semibold group-hover:text-[#C8A55C] transition-colors">
+                      {item.label}
+                    </div>
+                    {item.description && <div className="text-sm text-gray-500 mt-1">{item.description}</div>}
+                  </div>
+                  <ChevronRightIcon className="w-4 h-4 text-gray-400 shrink-0 mt-1" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )
+      }
+    }
+
     if (categoryStack.length > 0) {
       const categoryIndex = categoryStack[0].index
       const currentCategory = navigationConfig[categoryIndex]
-      const categoryProducts = submenuProductsData[currentCategory.title] || []
+      const categoryProducts = submenuProductsData[currentCategory.label] || []
 
       return (
         <div className="space-y-6 animate-in slide-in-from-right duration-200">
@@ -592,14 +683,14 @@ export function MobileMenuEnhanced({
 
           {/* Category Header */}
           <div className="bg-[#F5F3EF] -mx-4 px-4 py-3 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-[#0B1C2C]">{currentCategory.title}</h2>
+            <h2 className="text-xl font-bold text-[#0B1C2C]">{currentCategory.label}</h2>
             {currentCategory.href && (
               <Link
                 href={currentCategory.href}
                 onClick={onClose}
                 className="text-sm text-[#C8A55C] hover:text-[#0B1C2C] font-semibold inline-block mt-1"
               >
-                View All {currentCategory.title} →
+                View All {currentCategory.label} →
               </Link>
             )}
           </div>
@@ -643,7 +734,7 @@ export function MobileMenuEnhanced({
 
           {/* Subcategories */}
           <div>
-            <h4 className="text-sm font-bold text-gray-900 mb-3">Browse {currentCategory.title}</h4>
+            <h4 className="text-sm font-bold text-gray-900 mb-3">Browse {currentCategory.label}</h4>
             <div className="space-y-1">
               {currentCategory.items.map((item, idx) => (
                 <Link
@@ -773,14 +864,19 @@ export function MobileMenuEnhanced({
         <div>
           <h3 className="text-base font-bold text-[#0B1C2C] mb-3">Shop by Department</h3>
           <div className="space-y-1">
-            {navigationConfig.map((category, idx) => (
+            {navigationConfig.map((department, idx) => (
               <button
                 key={idx}
-                onClick={() => navigateToCategory(idx, category.title)}
-                className="flex items-center justify-between w-full p-3 hover:bg-[#F5F3EF] rounded-lg transition-colors text-left"
+                onClick={() => setDepartmentStack([{ type: "main", index: idx, label: department.label }])}
+                className="flex items-center justify-between w-full p-4 hover:bg-[#F5F3EF] rounded-lg transition-colors text-left border border-gray-100 bg-white group"
               >
-                <span className="text-[#0B1C2C] font-medium">{category.title}</span>
-                <ChevronRightIcon className="w-5 h-5 text-gray-400" />
+                <div>
+                  <div className="text-[#0B1C2C] font-semibold">{department.label}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">
+                    {department.categories.reduce((acc, cat) => acc + cat.items.length, 0)} products
+                  </div>
+                </div>
+                <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-[#C8A55C] transition-colors" />
               </button>
             ))}
           </div>
@@ -1025,6 +1121,7 @@ export function MobileMenuEnhanced({
               onClick={() => {
                 setActiveTab(tab.id)
                 setCategoryStack([])
+                setDepartmentStack([])
               }}
               className={cn(
                 "flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
