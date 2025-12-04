@@ -128,7 +128,13 @@ export function PhoenixPremierKitSalesPage() {
       <section className="relative min-h-screen bg-gradient-to-br from-[#0B1C2C] via-[#1A2F44] to-[#0B1C2C] text-white overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0 opacity-30">
-          <Image src="/american-flag-flying-on-tall-flagpole-in-front-of-.jpg" alt="American Flag Flying" fill className="object-cover" priority />
+          <Image
+            src="/american-flag-flying-on-tall-flagpole-in-front-of-.jpg"
+            alt="American Flag Flying"
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
 
         {/* Embossed Flag Texture Overlay */}
@@ -140,7 +146,7 @@ export function PhoenixPremierKitSalesPage() {
             <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
               <Badge className="bg-white/10 backdrop-blur-sm text-white px-4 py-2 text-sm font-semibold border border-white/20">
                 <Image
-                  src="/images/design-mode/madeinusabadge(1).jpg"
+                  src="/images/madeinusabadge.jpg"
                   alt="Made in USA"
                   width={24}
                   height={24}

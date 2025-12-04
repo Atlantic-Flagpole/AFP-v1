@@ -8,7 +8,7 @@ import Image from "next/image"
 import { useCart } from "@/components/cart/cart-context"
 import { useGeo } from "@/lib/geo/context"
 import { getStateCodeFromRegion } from "@/lib/geo/state-mapping"
-import { MobileMenuEnhanced } from "@/components/header/mobile-menu-enhanced"
+import { MobileMenuAmazon } from "@/components/header/mobile-menu-amazon"
 import { SearchBarWrapper } from "@/components/search/search-bar-wrapper"
 
 interface MenuItem {
@@ -331,7 +331,7 @@ export function HeaderClient({
               </div>
             </div>
 
-            <MobileMenuEnhanced
+            <MobileMenuAmazon
               isOpen={mobileMenuOpen}
               onClose={() => setMobileMenuOpen(false)}
               location={location}

@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { SpinWheel } from "./spin-wheel"
+import { X, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
 interface QuizQuestion {
@@ -181,38 +182,6 @@ export function FlagpoleQuizModal({ open, onOpenChange }: FlagpoleQuizModalProps
 
   const question = quizQuestions[currentQuestion]
 
-  // Inline SVGs for X and ChevronRight icons
-  const XIcon = ({ className }: { className?: string }) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
-    </svg>
-  )
-
-  const ChevronRightIcon = ({ className }: { className?: string }) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  )
-
   if (showWheel) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -233,7 +202,7 @@ export function FlagpoleQuizModal({ open, onOpenChange }: FlagpoleQuizModalProps
               onClick={() => onOpenChange(false)}
               className="absolute right-2 top-2 text-white/70 hover:text-white transition-colors z-10"
             >
-              <XIcon className="w-4 h-4" />
+              <X className="w-4 h-4" />
             </button>
             <div className="pr-7">
               <h2 className="text-lg md:text-xl font-serif font-bold mb-0.5">Flagpole & Flag Quiz</h2>
@@ -314,7 +283,7 @@ export function FlagpoleQuizModal({ open, onOpenChange }: FlagpoleQuizModalProps
                   className="w-full bg-gradient-to-r from-[#c8a55c] to-[#a88947] hover:from-[#a88947] hover:to-[#8a6d39] text-white font-semibold py-3 text-sm shadow-lg hover:shadow-xl transition-all border-b-4 border-[#8a6d39]"
                 >
                   {currentQuestion === quizQuestions.length - 1 ? "Finish Quiz" : "Next Question"}
-                  <ChevronRightIcon className="ml-1.5 w-4 h-4" />
+                  <ChevronRight className="ml-1.5 w-4 h-4" />
                 </Button>
               )}
             </div>

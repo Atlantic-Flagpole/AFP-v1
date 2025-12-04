@@ -39,27 +39,16 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* Comprehensive Atlantic Flagpoles semantic design tokens */
+  /* Adding Atlantic Flagpoles brand tokens */
   --afp-navy: #0b1c2c;
   --afp-navy-800: #112b44;
-  --afp-navy-light: #1a2f42;
   --afp-gold: #c8a55c;
   --afp-gold-700: #a88947;
-  --afp-gold-dark: #8a7038;
-  --afp-gold-light: #d4b56f;
   --afp-ivory: #f5f3ef;
   --afp-white: #ffffff;
   --afp-charcoal: #333333;
   --afp-success: #2e7d32;
   --afp-danger: #b71c1c;
-  --afp-warning: #f57c00;
-  --afp-gray-50: #fafafa;
-  --afp-gray-100: #f5f5f5;
-  --afp-gray-200: #e5e5e5;
-  --afp-gray-300: #d4d4d4;
-  --afp-gray-500: #737373;
-  --afp-gray-700: #404040;
-  --afp-gray-800: #262626;
 }
 
 .dark {
@@ -138,27 +127,14 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Complete Atlantic Flagpoles color utility tokens for Tailwind */
+  /* Adding Atlantic Flagpoles color utilities */
   --color-afp-navy: var(--afp-navy);
   --color-afp-navy-800: var(--afp-navy-800);
-  --color-afp-navy-light: var(--afp-navy-light);
   --color-afp-gold: var(--afp-gold);
   --color-afp-gold-700: var(--afp-gold-700);
-  --color-afp-gold-dark: var(--afp-gold-dark);
-  --color-afp-gold-light: var(--afp-gold-light);
   --color-afp-ivory: var(--afp-ivory);
   --color-afp-white: var(--afp-white);
   --color-afp-charcoal: var(--afp-charcoal);
-  --color-afp-success: var(--afp-success);
-  --color-afp-danger: var(--afp-danger);
-  --color-afp-warning: var(--afp-warning);
-  --color-afp-gray-50: var(--afp-gray-50);
-  --color-afp-gray-100: var(--afp-gray-100);
-  --color-afp-gray-200: var(--afp-gray-200);
-  --color-afp-gray-300: var(--afp-gray-300);
-  --color-afp-gray-500: var(--afp-gray-500);
-  --color-afp-gray-700: var(--afp-gray-700);
-  --color-afp-gray-800: var(--afp-gray-800);
 }
 
 @layer base {
@@ -203,7 +179,7 @@
   }
 }
 
-/* Enhanced Atlantic Flagpoles utility classes with semantic tokens */
+/* Adding Atlantic Flagpoles utility classes */
 @layer utilities {
   .bg-navy {
     background-color: var(--afp-navy);
@@ -211,10 +187,6 @@
 
   .bg-navy-800 {
     background-color: var(--afp-navy-800);
-  }
-
-  .bg-navy-light {
-    background-color: var(--afp-navy-light);
   }
 
   .text-ivory {
@@ -225,20 +197,8 @@
     color: var(--afp-gold);
   }
 
-  .text-gold-700 {
-    color: var(--afp-gold-700);
-  }
-
   .text-charcoal {
     color: var(--afp-charcoal);
-  }
-
-  .border-gold {
-    border-color: var(--afp-gold);
-  }
-
-  .bg-ivory {
-    background-color: var(--afp-ivory);
   }
 
   .btn-gold {
@@ -465,37 +425,6 @@
     animation: slide-in-right 0.3s ease-out;
   }
 
-  /* Added optimized page load animations */
-  @keyframes header-slide-down {
-    0% {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes hero-slide-up {
-    0% {
-      opacity: 0;
-      transform: translateY(40px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-header-slide-down {
-    animation: header-slide-down 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-
-  .animate-hero-slide-up {
-    animation: hero-slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-  }
-
   /* Adding vertical writing mode for tab text */
   .writing-mode-vertical {
     writing-mode: vertical-rl;
@@ -504,37 +433,6 @@
 
   .perspective-1000 {
     perspective: 1000px;
-  }
-
-  /* Improved mega menu slide animations with proper easing and timing */
-  @keyframes slideDown {
-    0% {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slideUp {
-    0% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    100% {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-  }
-
-  .animate-slideDown {
-    animation: slideDown 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-
-  .animate-slideUp {
-    animation: slideUp 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   /* Adding patriotic-themed custom scrollbar styles */

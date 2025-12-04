@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { getProduct, getProducts } from "@/lib/shopify"
+import { ProductDetailsDreamCloud } from "@/components/products/product-details-dreamcloud"
 import ProductSeo from "@/components/product-seo"
 import { getProductReviews } from "@/lib/shopify/reviews"
 import { getBundleData, getComplementaryProducts } from "@/lib/shopify/bundles"
@@ -8,7 +9,6 @@ import { LocalizedRecommendations } from "@/components/products/localized-recomm
 import { generateProductMetadata } from "@/lib/seo/metadata"
 import { generateProductSchema, generateBreadcrumbSchema } from "@/lib/seo/structured-data"
 import { StructuredData } from "@/components/seo/structured-data"
-import { ProductDetails } from "@/components/products/product-details"
 
 export const revalidate = 3600
 
@@ -137,7 +137,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <StructuredData data={productSchema} />
       <StructuredData data={breadcrumbSchema} />
       <ProductSeo product={product} />
-      <ProductDetails product={product} relatedProducts={relatedProducts} />
+      <ProductDetailsDreamCloud
+        product={product}
+        relatedProducts={relatedProducts}
+        bundleProducts={bundleProducts}
+        reviewsData={reviewsData}
+        bundleData={bundleData}
+      />
       <LocalizedRecommendations fallbackProducts={fallbackProducts} />
     </main>
   )
